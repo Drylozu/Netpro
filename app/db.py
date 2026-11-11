@@ -1,9 +1,3 @@
-"""Conexión a Neo4j mediante el driver oficial.
-
-Un único driver por proceso (es thread-safe y costoso de crear). Cada operación
-abre una sesión corta y usa transacciones gestionadas (execute_read /
-execute_write), que reintentan automáticamente ante errores transitorios.
-"""
 import os
 
 from dotenv import load_dotenv
@@ -36,13 +30,11 @@ def _run(tx, query, params):
 
 
 def read(query, **params):
-    """Ejecuta una consulta de lectura y devuelve una lista de dicts."""
     with get_driver().session() as session:
         return session.execute_read(_run, query, params)
 
 
 def write(query, **params):
-    """Ejecuta una consulta de escritura y devuelve una lista de dicts."""
     with get_driver().session() as session:
         return session.execute_write(_run, query, params)
 

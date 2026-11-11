@@ -1,4 +1,3 @@
-"""Consultas del grafo (Q1–Q6 y caminos)."""
 from flask import Blueprint, jsonify
 
 from app.repositories import consultas as repo

@@ -1,4 +1,3 @@
-"""CRUD de ofertas laborales, sus requisitos y postulaciones."""
 from app import db
 from app.repositories.comun import Invalido, existe, filtrar, hoy, nuevo_id, requerir
 

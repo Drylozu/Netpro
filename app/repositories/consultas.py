@@ -1,8 +1,6 @@
-"""Consultas de análisis del grafo: las preguntas Q1–Q6 del enunciado y búsqueda de caminos."""
 from app import db
 from app.repositories.comun import Invalido
 
-# Proyección común de un camino a JSON: lista de nodos (tipo, id, nombre) y tipos de relación.
 _CAMINO = """
   [n IN nodes(p) | {tipo: labels(n)[0], id: coalesce(n.id, n.clave),
                     nombre: coalesce(n.nombre, n.titulo)}] AS nodos,
@@ -11,9 +9,7 @@ _CAMINO = """
 """
 
 
-# Q1 ------------------------------------------------------------------------
 def usuarios_similares(uid, limite=10):
-    """Similitud de Jaccard: |A∩B| / |A∪B| sobre los conjuntos de habilidades."""
     return db.read(
         """
         MATCH (u:Usuario {id: $id})-[:TIENE_HABILIDAD]->(h:Habilidad)<-[:TIENE_HABILIDAD]-(otro:Usuario)
@@ -31,7 +27,6 @@ def usuarios_similares(uid, limite=10):
     )
 
 
-# Q2 ------------------------------------------------------------------------
 def contactos_en_comun(a, b):
     if a == b:
         raise Invalido("Elija dos usuarios distintos")
@@ -52,10 +47,7 @@ def contactos_en_comun(a, b):
     return fila
 
 
-# Q3 / RF7 ------------------------------------------------------------------
-# Modo 'contactos': solo se avanza por CONECTA_CON y el último salto es un
-# empleo actual (¿a quién le pido que me presente?).
-# Modo 'amplio': cualquier vínculo profesional (excompañeros, proyectos, etc.).
+# contactos: solo CONECTA_CON hasta un empleado actual; amplio: cualquier vínculo profesional
 _DESTINOS = {
     "usuario": ("Usuario", "(:Usuario {id: $origen})-[:CONECTA_CON]-{1,8}(:Usuario {id: $destino})"),
     "empresa": ("Empresa", "(:Usuario {id: $origen})-[:CONECTA_CON]-{0,7}(:Usuario)"
@@ -81,15 +73,7 @@ def rutas(origen, destino, tipo="empresa", modo="contactos", maximo=5):
     return db.read(query, origen=origen, destino=destino, maximo=maximo)
 
 
-# Q4 ------------------------------------------------------------------------
 def candidatos_para_oferta(oid, limite=15):
-    """Puntaje = 70 % cobertura ponderada de habilidades + 30 % cercanía social a la empresa.
-
-    - Cobertura: requisito obligatorio pesa 2, opcional 1; si el nivel del candidato
-      es menor al mínimo, cuenta a la mitad.
-    - Cercanía: 1.0 si tiene un contacto directo trabajando en la empresa (referido),
-      0.5 si lo tiene a 2 saltos, 0 en otro caso.
-    """
     return db.read(
         """
         MATCH (e:Empresa)-[:PUBLICA]->(o:Oferta {id: $id})
@@ -129,12 +113,7 @@ def candidatos_para_oferta(oid, limite=15):
     )
 
 
-# Q5 ------------------------------------------------------------------------
 def proyectos_relacionados(pid=None, limite=15):
-    """Pares de proyectos que comparten tecnologías, miembros o miembros conectados entre sí.
-
-    Puntaje = 1·tecnologías comunes + 2·miembros compartidos + 0.5·pares de miembros conectados.
-    """
     return db.read(
         """
         MATCH (p1:Proyecto), (p2:Proyecto)
@@ -164,9 +143,7 @@ def proyectos_relacionados(pid=None, limite=15):
     )
 
 
-# Q6 ------------------------------------------------------------------------
 def habilidades_demandadas(limite=15, solo_abiertas=True):
-    """Demanda (ofertas que la requieren) frente a oferta de talento (usuarios que la tienen)."""
     return db.read(
         """
         MATCH (o:Oferta)-[r:REQUIERE]->(h:Habilidad)

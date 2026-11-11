@@ -1,12 +1,3 @@
-"""Genera y carga un grafo de prueba reproducible (semilla fija).
-
-Uso:  .venv/bin/python scripts/seed.py
-ATENCIÓN: borra todos los datos existentes antes de cargar.
-
-Las conexiones se generan con sesgo (misma empresa > mismo sector > azar) para
-que el grafo tenga comunidades reales que Louvain pueda detectar, y con
-algunos "hubs" para que PageRank destaque usuarios influyentes.
-"""
 import pathlib
 import random
 import sys
@@ -35,7 +26,6 @@ def fecha(desde_anios=8, hasta_anios=0):
     return (date(2026, 11, 1) - timedelta(days=dias)).isoformat()
 
 
-# ---------------------------------------------------------------- catálogo
 HABILIDADES = {
     "lenguaje": ["Python", "Java", "JavaScript", "TypeScript", "C#", "Go", "SQL", "R", "Kotlin", "PHP"],
     "framework": ["Django", "Flask", "Spring Boot", "React", "Angular", "Node.js", ".NET", "Laravel"],
@@ -94,10 +84,8 @@ TAMANOS = ["Startup (1-50)", "Mediana (51-500)", "Grande (500+)"]
 
 
 def generar():
-    # Habilidades
     habilidades = [{"clave": h.lower(), "nombre": h, "categoria": c} for h, c in CATEGORIA.items()]
 
-    # Empresas
     empresas = []
     for sector, info in SECTORES.items():
         for nombre in info["empresas"]:
@@ -106,7 +94,6 @@ def generar():
                              "descripcion": f"Empresa del sector {sector.lower()}."})
     emp_por_sector = {s: [e for e in empresas if e["sector"] == s] for s in SECTORES}
 
-    # Usuarios
     usuarios, trabaja, tiene = [], [], []
     sectores = list(SECTORES)
     pesos = [0.32, 0.2, 0.16, 0.12, 0.2]
@@ -122,7 +109,6 @@ def generar():
              "bio": f"Profesional con {exp} años de experiencia en {sector.lower()}.",
              "_sector": sector}
         usuarios.append(u)
-        # Empleo actual (88 %) y anterior (40 %)
         actual = None
         if rnd.random() < 0.88:
             actual = rnd.choice(emp_por_sector[sector])
@@ -134,13 +120,11 @@ def generar():
             anterior = rnd.choice([e for e in emp_por_sector[otro_sector] if e is not actual])
             trabaja.append({"u": u["id"], "e": anterior["id"], "cargo": rnd.choice(SECTORES[otro_sector]["cargos"]),
                             "desde": fecha(max(exp, 7), 6), "hasta": fecha(5, 2), "actual": False})
-        # Habilidades: mayoría del sector + algunas generales
         propias = rnd.sample(info["skills"], rnd.randint(3, 6)) + rnd.sample(GENERALES, rnd.randint(1, 3))
         for h in set(propias):
             tiene.append({"u": u["id"], "h": h.lower(), "nivel": rnd.randint(1, 5),
                           "anios": rnd.randint(0, max(1, exp))})
 
-    # Conexiones con sesgo para formar comunidades
     por_empresa, por_sector = {}, {}
     for u in usuarios:
         por_sector.setdefault(u["_sector"], []).append(u)
@@ -161,13 +145,11 @@ def generar():
                 conectar(u, rnd.choice(por_sector[u["_sector"]]))
             else:
                 conectar(u, rnd.choice(usuarios))
-    # Hubs: algunos usuarios muy conectados (reclutadores, líderes)
     for hub in rnd.sample(usuarios, 8):
         for otro in rnd.sample(usuarios, rnd.randint(15, 30)):
             conectar(hub, otro)
     conexiones = [{"a": a, "b": b, "desde": fecha(5)} for a, b in pares]
 
-    # Proyectos
     proyectos, participa, usa, desarrolla = [], [], [], []
     temas = ["Plataforma", "Migración", "Portal", "Motor", "App", "Sistema", "Tablero", "API"]
     objetos = ["de pagos", "de inventario", "de analítica", "de citas", "de recomendaciones",
@@ -189,7 +171,6 @@ def generar():
         for i, m in enumerate({m["id"]: m for m in miembros}.values()):
             participa.append({"u": m["id"], "p": p["id"], "rol": "Líder" if i == 0 else rnd.choice(roles[1:])})
 
-    # Ofertas
     ofertas, publica, requiere = [], [], []
     niveles = ["Junior", "Semi-senior", "Senior"]
     for _ in range(60):
@@ -209,7 +190,6 @@ def generar():
             requiere.append({"o": o["id"], "h": h.lower(), "obligatoria": i < 2,
                              "nivel_minimo": {"Junior": 2, "Semi-senior": 3, "Senior": 4}[nivel] if i < 2 else 1})
 
-    # Postulaciones (usuarios con alguna habilidad en común con la oferta)
     skills_de = {}
     for t in tiene:
         skills_de.setdefault(t["u"], set()).add(t["h"])
@@ -232,7 +212,7 @@ def generar():
 
 def cargar(d):
     print("Borrando datos anteriores…")
-    # CALL {...} IN TRANSACTIONS exige una transacción implícita (auto-commit)
+    # IN TRANSACTIONS requiere auto-commit
     _run_autocommit("MATCH (n) CALL (n) { DETACH DELETE n } IN TRANSACTIONS OF 1000 ROWS")
     print("Creando restricciones…")
     for stmt in (ROOT / "cypher" / "00_constraints.cypher").read_text().split(";"):

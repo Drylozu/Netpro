@@ -1,4 +1,3 @@
-// Restricciones de unicidad (crean también un índice) e índices auxiliares.
 CREATE CONSTRAINT usuario_id      IF NOT EXISTS FOR (u:Usuario)   REQUIRE u.id IS UNIQUE;
 CREATE CONSTRAINT usuario_email   IF NOT EXISTS FOR (u:Usuario)   REQUIRE u.email IS UNIQUE;
 CREATE CONSTRAINT empresa_id      IF NOT EXISTS FOR (e:Empresa)   REQUIRE e.id IS UNIQUE;

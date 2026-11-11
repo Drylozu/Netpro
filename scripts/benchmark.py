@@ -1,16 +1,3 @@
-"""Experimento del componente de investigación: grafo (Neo4j) vs relacional (SQLite).
-
-Genera una red social sintética con comunidades, la carga en Neo4j (etiqueta
-:BenchUsuario, relación :BENCH_CONECTA, se borra al final) y en SQLite en memoria
-(tabla de aristas con índice), y mide las mismas preguntas en ambos motores.
-
-Uso:  .venv/bin/python scripts/benchmark.py [--tamanos 2000 20000] [--repeticiones 15]
-Resultados en docs/benchmark_resultados.md
-
-Nota de equidad: SQLite corre dentro del proceso de Python; Neo4j se consulta por
-red (Bolt). Por eso se reportan dos tiempos de Neo4j: el total visto por el cliente
-y el tiempo del servidor (available_after + consumed_after) que excluye la red.
-"""
 import argparse
 import pathlib
 import random
@@ -25,8 +12,6 @@ from app.db import close_driver, get_driver  # noqa: E402
 
 rnd = random.Random(7)
 
-
-# ------------------------------------------------------------------ datos
 def generar_red(n, tam_comunidad=50, grado_medio=10):
     aristas = set()
     for u in range(n):
@@ -40,7 +25,6 @@ def generar_red(n, tam_comunidad=50, grado_medio=10):
                 aristas.add((min(u, v), max(u, v)))
     return sorted(aristas)
 
-
 def cargar_neo4j(n, aristas):
     with get_driver().session() as s:
         limpiar_neo4j(s)
@@ -53,17 +37,14 @@ def cargar_neo4j(n, aristas):
             s.run("""UNWIND $rows AS r MATCH (a:BenchUsuario {id: r.a}), (b:BenchUsuario {id: r.b})
                      CREATE (a)-[:BENCH_CONECTA]->(b)""", rows=lote).consume()
 
-
 def limpiar_neo4j(s):
     s.run("MATCH (u:BenchUsuario) CALL (u) { DETACH DELETE u } IN TRANSACTIONS OF 5000 ROWS").consume()
     s.run("DROP INDEX bench_id IF EXISTS").consume()
-
 
 def cargar_sqlite(n, aristas):
     con = sqlite3.connect(":memory:")
     con.executescript("""
         CREATE TABLE usuario (id INTEGER PRIMARY KEY);
-        -- Cada conexión se guarda en ambos sentidos (práctica habitual) con índice por origen
         CREATE TABLE conexion (origen INTEGER, destino INTEGER, PRIMARY KEY (origen, destino)) WITHOUT ROWID;
     """)
     con.executemany("INSERT INTO usuario VALUES (?)", ((i,) for i in range(n)))
@@ -72,8 +53,6 @@ def cargar_sqlite(n, aristas):
     con.execute("ANALYZE")
     return con
 
-
-# --------------------------------------------------------------- consultas
 SQL = {
     "alcance": """
         WITH RECURSIVE alcance(id, d) AS (
@@ -113,7 +92,6 @@ CYPHER = {
     "busqueda": "MATCH (u:BenchUsuario {id: $inicio}) RETURN u.id",
 }
 
-
 def medir_sqlite(con, sql, params_lista):
     tiempos, res = [], None
     for p in params_lista:
@@ -122,11 +100,10 @@ def medir_sqlite(con, sql, params_lista):
         tiempos.append((time.perf_counter() - t) * 1000)
     return statistics.median(tiempos), res
 
-
 def medir_neo4j(cypher, params_lista):
     total, servidor, res = [], [], None
     with get_driver().session() as s:
-        s.run(cypher, **params_lista[0]).consume()  # calentamiento (planificación en caché)
+        s.run(cypher, **params_lista[0]).consume()  # calentamiento
         for p in params_lista:
             t = time.perf_counter()
             r = s.run(cypher, **p)
@@ -135,7 +112,6 @@ def medir_neo4j(cypher, params_lista):
             total.append((time.perf_counter() - t) * 1000)
             servidor.append(resumen.result_available_after + resumen.result_consumed_after)
     return statistics.median(total), statistics.median(servidor), res
-
 
 def experimento(n, repeticiones):
     print(f"\n== Red de {n} usuarios ==")
@@ -159,7 +135,6 @@ def experimento(n, repeticiones):
         reps = params[:3] if clave in ("top_grado", "alcance5", "alcance6") else params
         t_sql, r_sql = medir_sqlite(con, sql, reps)
         t_neo, t_srv, r_neo = medir_neo4j(cypher, reps)
-        # Verificación: ambos motores deben dar la misma respuesta (en el top se comparan los grados)
         norm = (lambda r: [x[-1] for x in r]) if clave == "top_grado" else (lambda r: [tuple(x) for x in r])
         iguales = norm(r_sql) == norm(r_neo)
         filas.append((nombre, t_sql, t_neo, t_srv, iguales))
@@ -167,7 +142,6 @@ def experimento(n, repeticiones):
               f" {'✓' if iguales else '✗ RESULTADOS DISTINTOS'}")
     con.close()
     return len(aristas), filas
-
 
 def main():
     ap = argparse.ArgumentParser()
@@ -193,7 +167,6 @@ def main():
     salida = ROOT / "docs" / "benchmark_resultados.md"
     salida.write_text("\n".join(md), encoding="utf-8")
     print(f"\nResultados guardados en {salida.relative_to(ROOT)}")
-
 
 if __name__ == "__main__":
     main()

@@ -3,11 +3,11 @@ from datetime import date
 
 
 class NoEncontrado(Exception):
-    """El nodo solicitado no existe (se traduce a HTTP 404)."""
+    pass
 
 
 class Invalido(ValueError):
-    """Datos inválidos o regla de negocio incumplida (se traduce a HTTP 400)."""
+    pass
 
 
 def nuevo_id():
@@ -19,7 +19,6 @@ def hoy():
 
 
 def filtrar(datos, permitidos):
-    """Devuelve solo las claves permitidas, descartando vacíos."""
     return {k: v for k, v in (datos or {}).items() if k in permitidos and v not in (None, "")}
 
 

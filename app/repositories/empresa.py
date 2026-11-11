@@ -1,4 +1,3 @@
-"""CRUD de empresas."""
 from app import db
 from app.repositories.comun import Invalido, existe, filtrar, nuevo_id, requerir
 
@@ -50,7 +49,6 @@ def actualizar(eid, datos):
 
 
 def eliminar(eid):
-    # Las ofertas pertenecen a la empresa: se eliminan con ella (y sus postulaciones)
     return existe(db.write_one(
         """
         MATCH (e:Empresa {id: $id})

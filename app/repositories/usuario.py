@@ -1,4 +1,3 @@
-"""CRUD de usuarios y sus relaciones (conexiones, habilidades, empleos, proyectos, postulaciones)."""
 from app import db
 from app.repositories.comun import Invalido, existe, filtrar, hoy, nuevo_id, requerir
 
@@ -17,7 +16,6 @@ def _normalizar(datos):
     return props
 
 
-# ------------------------------------------------------------------ CRUD
 def listar(q="", limite=50):
     return db.read(
         """
@@ -72,7 +70,6 @@ def actualizar(uid, datos):
 
 
 def eliminar(uid):
-    # DETACH DELETE elimina el nodo y todas sus relaciones
     return existe(db.write_one(
         """
         MATCH (u:Usuario {id: $id})
@@ -84,11 +81,10 @@ def eliminar(uid):
     ), "Usuario")
 
 
-# ------------------------------------------------------------ Conexiones
 def conectar(uid, otro_id):
     if uid == otro_id:
         raise Invalido("Un usuario no puede conectarse consigo mismo")
-    # MERGE sin dirección: si ya existen conectados (en cualquier sentido) no duplica
+    # MERGE sin dirección: no duplica la conexión
     return existe(db.write_one(
         """
         MATCH (a:Usuario {id: $a}), (b:Usuario {id: $b})
@@ -110,7 +106,6 @@ def desconectar(uid, otro_id):
     )
 
 
-# ----------------------------------------------------------- Habilidades
 def agregar_habilidad(uid, datos):
     requerir(datos, "nombre")
     nivel = int(datos.get("nivel") or 3)
@@ -138,14 +133,12 @@ def quitar_habilidad(uid, clave):
     )
 
 
-# --------------------------------------------------------------- Empleos
 def agregar_empleo(uid, datos):
     requerir(datos, "empresa_id", "cargo")
     actual = bool(datos.get("actual", True))
     return existe(db.write_one(
         """
         MATCH (u:Usuario {id: $id}), (e:Empresa {id: $empresa})
-        // Si es el empleo actual, los demás empleos dejan de serlo
         CALL (u, e) {
           MATCH (u)-[otro:TRABAJA_EN {actual: true}]->(x) WHERE $actual AND x <> e
           SET otro.actual = false, otro.hasta = coalesce(otro.hasta, $hoy)
@@ -166,7 +159,6 @@ def quitar_empleo(uid, empresa_id):
     )
 
 
-# ------------------------------------------------------------- Proyectos
 def unir_a_proyecto(uid, datos):
     requerir(datos, "proyecto_id")
     return existe(db.write_one(
@@ -187,7 +179,6 @@ def salir_de_proyecto(uid, proyecto_id):
     )
 
 
-# --------------------------------------------------------- Postulaciones
 def postular(uid, oferta_id):
     fila = existe(db.read_one(
         "MATCH (u:Usuario {id: $u}), (o:Oferta {id: $o}) RETURN o.estado AS estado",

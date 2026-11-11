@@ -46,7 +46,6 @@ function formularioNuevo() {
   }));
 }
 
-/** Lista con botón de quitar por elemento. */
 const listaQuitable = (items, contenido, alQuitar, textoVacio) => (items.length
   ? h('ul', { class: 'lista' }, items.map((it) => h('li', {}, h('div', {}, contenido(it)),
     h('button', { class: 'icono', title: 'Quitar', onClick: () => alQuitar(it) }, '✕'))))
@@ -63,7 +62,6 @@ async function detalle(id) {
     const base = `/api/usuarios/${id}`;
     const accion = (fn, msg) => intentar(fn, msg).then(() => { invalidar('usuarios'); return recargar(); });
 
-    // ---- habilidades
     const sugerencias = datalist(habilidades.map((x) => x.nombre));
     const habilidadesCard = tarjeta(`Habilidades (${p.habilidades.length})`,
       p.habilidades.length
@@ -78,7 +76,6 @@ async function detalle(id) {
         { name: 'anios', label: 'Años', type: 'number', min: 0, value: 1 },
       ], { clase: 'en-linea', boton: 'Agregar', alEnviar: (d) => accion(() => api.post(`${base}/habilidades`, d), 'Habilidad agregada').then(() => invalidar('habilidades')) }));
 
-    // ---- experiencia
     const selEmpresa = selector(empresas, { placeholder: 'Empresa…' });
     const experienciaCard = tarjeta('Experiencia laboral',
       listaQuitable(p.empleos.sort((a, b) => (b.actual - a.actual) || String(b.desde).localeCompare(a.desde)), (e) => [
@@ -96,7 +93,6 @@ async function detalle(id) {
       h('label', { class: 'check' }, h('input', { type: 'checkbox', name: 'actual', checked: true }), 'Actual'),
       h('button', { type: 'submit' }, 'Agregar')));
 
-    // ---- proyectos
     const selProyecto = selector(proyectos, { placeholder: 'Proyecto…' });
     const proyectosCard = tarjeta(`Proyectos (${p.proyectos.length})`,
       listaQuitable(p.proyectos, (x) => [enlace(`proyectos/${x.proyecto_id}`, x.proyecto), ' ', badge(x.estado ?? ''), h('span', { class: 'sub' }, x.rol)],
@@ -109,7 +105,6 @@ async function detalle(id) {
       h('label', {}, 'Rol', h('input', { name: 'rol', placeholder: 'Desarrollador, QA…' })),
       h('button', { type: 'submit' }, 'Unir')));
 
-    // ---- conexiones
     const selUsuario = selector(usuarios.filter((x) => x.id !== id), { placeholder: 'Buscar usuario…' });
     const conexionesCard = tarjeta(`Conexiones (${p.conexiones.length})`,
       h('div', { class: 'desplazable', style: { maxHeight: '320px' } },
@@ -122,7 +117,6 @@ async function detalle(id) {
         accion(() => api.post(`${base}/conexiones`, { usuario_id: selUsuario.valor }), 'Conexión creada');
       } }, h('label', {}, 'Conectar con', selUsuario.el), h('button', { type: 'submit' }, 'Conectar')));
 
-    // ---- postulaciones
     const selOferta = selector(ofertas.filter((o) => o.estado === 'abierta'), { placeholder: 'Oferta abierta…' });
     const postulacionesCard = tarjeta(`Postulaciones (${p.postulaciones.length})`,
       listaQuitable(p.postulaciones, (x) => [enlace(`ofertas/${x.oferta_id}`, x.titulo), ' ', badge(x.estado), h('span', { class: 'sub' }, `${x.empresa}, ${x.fecha}`)],
@@ -133,7 +127,6 @@ async function detalle(id) {
         accion(() => api.post(`${base}/postulaciones`, { oferta_id: selOferta.valor }), 'Postulación enviada');
       } }, h('label', {}, 'Postularse a', selOferta.el), h('button', { type: 'submit' }, 'Postular')));
 
-    // ---- datos
     const datosCard = tarjeta('Datos personales y profesionales', formulario(CAMPOS, {
       valores: u, boton: 'Guardar cambios',
       alEnviar: (d) => accion(() => api.put(base, d), 'Datos actualizados'),

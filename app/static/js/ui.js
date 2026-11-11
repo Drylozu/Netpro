@@ -1,6 +1,3 @@
-// Utilidades de interfaz sin frameworks: creación de elementos, formularios, tablas, avisos.
-
-/** Crea un elemento DOM. Los hijos de texto se insertan como texto (nunca como HTML). */
 export function h(tag, attrs = {}, ...hijos) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {
@@ -29,7 +26,6 @@ export function aviso(mensaje, tipo = 'ok') {
   setTimeout(() => el.remove(), tipo === 'error' ? 6000 : 3000);
 }
 
-/** Ejecuta una acción asíncrona mostrando el error (si lo hay) como aviso. */
 export async function intentar(fn, mensajeOk) {
   try {
     const r = await fn();
@@ -54,21 +50,16 @@ export const badge = (texto) => h('span', { class: `badge ${String(texto).replac
 export const nivel = (n) => h('span', { class: 'nivel', title: `Nivel ${n} de 5`, 'aria-label': `Nivel ${n} de 5` },
   [1, 2, 3, 4, 5].map((i) => h('i', { class: i <= n ? 'lleno' : null })));
 
-/** Chips; tipo = 'habilidad' (por defecto) o 'usuario' para colorearlas como ese tipo de nodo. */
 export const chips = (items, fn = (x) => x, tipo = 'habilidad') =>
   items?.length ? h('div', { class: 'chips' }, items.map((x) => h('span', { class: `chip ${tipo}` }, fn(x)))) : h('span', { class: 'suave' }, '—');
 
-/** Colores de comunidad (por orden de tamaño), compartidos por la portada y la analítica. */
 export const COLORES_COMUNIDAD = ['#7c8bff', '#f2b640', '#35c99e', '#c27bf2', '#f2709d', '#5fd0e8', '#c4cf5a', '#ff9f68', '#a8a6d6'];
 
 export const enlace = (ruta, texto) => h('a', { href: `#/${ruta}` }, texto);
 
 export const volver = (ruta, texto) => h('a', { class: 'volver', href: `#/${ruta}` }, `‹ ${texto}`);
 
-/**
- * Formulario a partir de una lista de campos.
- * campo: {name, label, type, options:[[valor, texto]], required, value, placeholder, ancho, list}
- */
+// campo: {name, label, type, options, required, value, placeholder, ancho, list}
 export function formulario(campos, { boton = 'Guardar', alEnviar, clase = 'formulario', valores = {} } = {}) {
   const form = h('form', { class: clase });
   for (const c of campos) {
@@ -106,7 +97,6 @@ export function formulario(campos, { boton = 'Guardar', alEnviar, clase = 'formu
   return form;
 }
 
-/** Tabla: columnas = [{titulo, valor: fila => nodo|texto, num}] */
 export function tabla(columnas, filas, textoVacio) {
   if (!filas?.length) return vacio(textoVacio);
   return h('div', { class: 'tabla-wrap' }, h('table', {},
@@ -114,7 +104,6 @@ export function tabla(columnas, filas, textoVacio) {
     h('tbody', {}, filas.map((f) => h('tr', {}, columnas.map((c) => h('td', { class: c.num ? 'num' : null }, c.valor(f))))))));
 }
 
-/** Barras horizontales en CSS puro. items: [{etiqueta, valor, valor2?}] */
 export function barras(items, { formato = (v) => v, max, color, color2 } = {}) {
   if (!items?.length) return vacio();
   const tope = max ?? Math.max(...items.map((i) => Math.max(i.valor, i.valor2 ?? 0)), 1);
@@ -130,7 +119,6 @@ export function barras(items, { formato = (v) => v, max, color, color2 } = {}) {
       h('span', { class: 'valor' }, formato(i.valor, i)))));
 }
 
-/** Un camino del grafo como cadena de nodos y relaciones. */
 export function camino(ruta) {
   const partes = [];
   ruta.nodos.forEach((n, i) => {
@@ -142,10 +130,6 @@ export function camino(ruta) {
 }
 
 let contadorListas = 0;
-/**
- * Selector con búsqueda basado en <input list> + <datalist> (nativo del navegador).
- * items: [{id, label}]
- */
 export function selector(items, { placeholder = 'Escriba para buscar…', alCambiar, valorInicial } = {}) {
   const id = `dl-${++contadorListas}`;
   const mapa = new Map(items.map((i) => [i.label, i.id]));
@@ -160,7 +144,6 @@ export function selector(items, { placeholder = 'Escriba para buscar…', alCamb
   };
 }
 
-/** Datalist suelto (para inputs de texto libre con sugerencias). */
 export function datalist(valores) {
   const id = `dl-${++contadorListas}`;
   return { id, el: h('datalist', { id }, valores.map((v) => h('option', { value: v }))) };

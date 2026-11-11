@@ -1,4 +1,3 @@
-"""Panel de analítica: decide si usar GDS o el respaldo Cypher y agrega resultados."""
 import threading
 from collections import Counter, defaultdict
 
@@ -6,8 +5,7 @@ from app.repositories import analitica as repo
 from app.repositories import consultas
 
 _ultimo_calculo = {}
-# El navegador puede pedir varias vistas de analítica a la vez; el cálculo con GDS
-# debe ejecutarse de a uno (si no, dos peticiones intentan proyectar el mismo grafo).
+# Evita que dos peticiones proyecten el grafo de GDS al mismo tiempo
 _candado = threading.Lock()
 
 
@@ -26,7 +24,6 @@ def _asegurar_metricas():
     if _ultimo_calculo and repo.metricas_calculadas():
         return
     with _candado:
-        # Otra petición pudo haberlo calculado mientras esperábamos el candado
         if not (_ultimo_calculo and repo.metricas_calculadas()):
             _calcular()
 
@@ -70,7 +67,6 @@ def panel():
 
 
 def red():
-    """Red completa + ranking de comunidades (para que los colores coincidan con el panel)."""
     _asegurar_metricas()
     nodos, aristas = repo.red()
     return {

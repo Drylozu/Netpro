@@ -1,4 +1,3 @@
-"""Analítica del grafo con Graph Data Science (GDS) y respaldos en Cypher puro."""
 from app import db
 
 GRAFO = "red-usuarios"
@@ -13,8 +12,6 @@ def gds_disponible():
 
 
 def calcular_metricas():
-    """Proyecta la red de usuarios en memoria, ejecuta PageRank, Betweenness y Louvain,
-    escribe los resultados como propiedades de los nodos y libera la proyección."""
     db.write("CALL gds.graph.drop($g, false) YIELD graphName RETURN graphName", g=GRAFO)
     proy = db.write_one(
         """
@@ -42,8 +39,6 @@ def calcular_metricas():
 
 
 def calcular_metricas_cypher():
-    """Respaldo sin GDS: centralidad de grado como 'influencia' y sector de la empresa
-    actual como 'comunidad' aproximada."""
     db.write(
         """
         MATCH (u:Usuario)
@@ -79,7 +74,6 @@ def influyentes(limite=10):
 
 
 def intermediarios(limite=10):
-    """Usuarios 'puente' entre comunidades (alta centralidad de intermediación)."""
     return db.read(
         """
         MATCH (u:Usuario) WHERE u.intermediacion > 0
@@ -117,7 +111,6 @@ def conexiones_entre_comunidades():
 
 
 def red():
-    """Toda la red de usuarios (nodos y conexiones) para dibujarla en el navegador."""
     nodos = db.read(
         """
         MATCH (u:Usuario)

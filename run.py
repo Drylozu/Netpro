@@ -1,4 +1,3 @@
-"""Punto de entrada: .venv/bin/python run.py  →  http://localhost:8000"""
 import os
 
 from app import create_app

@@ -1,4 +1,3 @@
-"""CRUD de proyectos y sus tecnologías."""
 from app import db
 from app.repositories.comun import Invalido, existe, filtrar, nuevo_id, requerir
 

@@ -1,4 +1,3 @@
-// Envoltorio mínimo de fetch() para la API JSON de Flask.
 async function peticion(metodo, url, cuerpo) {
   const opciones = { method: metodo, headers: {} };
   if (cuerpo !== undefined) {

@@ -3,7 +3,6 @@ import { lista } from '../store.js';
 import { badge, barras, camino, chips, enlace, h, intentar, pct, selector, tabla, tarjeta, vacio } from '../ui.js';
 import { tablaRelacionados } from './proyectos.js';
 
-/** Tarjeta de consulta: título, explicación, controles y zona de resultados. */
 function consulta(titulo, explicacion, controles, ejecutar, { auto = false } = {}) {
   const resultado = h('div', { style: { marginTop: '.75rem' } });
   const correr = async () => {
@@ -21,7 +20,6 @@ const exigir = (...valores) => { if (valores.some((v) => !v)) throw new Error('S
 export async function render([accion, param]) {
   const [usuarios, empresas, ofertas, proyectos] = await Promise.all(['usuarios', 'empresas', 'ofertas', 'proyectos'].map(lista));
 
-  // Q1 ---------------------------------------------------------------------
   const q1u = selector(usuarios, { valorInicial: accion === 'similares' ? param : undefined });
   const q1 = consulta('¿Qué usuarios tienen habilidades similares?',
     'Similitud de Jaccard: habilidades en común / habilidades totales de ambos. Se obtiene recorriendo Usuario → Habilidad ← Usuario.',
@@ -36,7 +34,6 @@ export async function render([accion, param]) {
       ], filas);
     }, { auto: accion === 'similares' && param });
 
-  // Q2 ---------------------------------------------------------------------
   const q2a = selector(usuarios); const q2b = selector(usuarios);
   const q2 = consulta('¿Qué contactos en común tienen dos profesionales?',
     'Patrón (a)-[:CONECTA_CON]-(c)-[:CONECTA_CON]-(b), más los grados de separación con SHORTEST.',
@@ -52,7 +49,6 @@ export async function render([accion, param]) {
           : vacio('No tienen contactos en común'));
     });
 
-  // Q3 / RF7 -----------------------------------------------------------------
   const q3o = selector(usuarios);
   const destinoCaja = h('label', {}, 'Destino');
   const fuentesDestino = { empresa: empresas, usuario: usuarios, oferta: ofertas.filter((o) => o.estado === 'abierta') };
@@ -73,7 +69,6 @@ export async function render([accion, param]) {
       return h('div', {}, h('p', {}, h('b', {}, `${rutas[0].saltos} saltos`), rutas.length > 1 ? `, con ${rutas.length} rutas posibles de esa longitud.` : '. Es la única ruta de esa longitud.'), rutas.map(camino));
     });
 
-  // Q4 ---------------------------------------------------------------------
   const q4o = selector(ofertas.filter((o) => o.estado === 'abierta'));
   const q4 = consulta('¿Qué candidatos recomendar para una oferta?',
     'Combina competencias (cobertura ponderada de REQUIERE ↔ TIENE_HABILIDAD) y conexiones (contactos que trabajan en la empresa que publica).',
@@ -90,7 +85,6 @@ export async function render([accion, param]) {
       ], filas));
     });
 
-  // Q5 ---------------------------------------------------------------------
   const q5p = selector(proyectos, { placeholder: 'Todos (o elija uno)…' });
   const q5 = consulta('¿Qué proyectos comparten tecnologías o miembros relacionados?',
     'Puntaje = tecnologías comunes + 2 × miembros compartidos + 0,5 × pares de miembros conectados entre sí.',
@@ -98,7 +92,6 @@ export async function render([accion, param]) {
     async () => tablaRelacionados(await api.get(`/api/consultas/proyectos-relacionados?${qs({ proyecto: q5p.valor })}`), q5p.valor),
     { auto: true });
 
-  // Q6 ---------------------------------------------------------------------
   const q6t = h('select', {}, [['', 'Ofertas abiertas'], ['1', 'Todas las ofertas']].map(([v, t]) => h('option', { value: v }, t)));
   const q6 = consulta('¿Qué habilidades son las más demandadas?',
     'Grado entrante de REQUIERE en cada Habilidad, comparado con cuántos usuarios la tienen (talento disponible).',

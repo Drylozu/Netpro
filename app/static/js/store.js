@@ -1,4 +1,3 @@
-// Caché sencilla de listas usadas por los selectores (usuarios, empresas, ofertas, ...).
 import { api } from './api.js';
 
 const fuentes = {

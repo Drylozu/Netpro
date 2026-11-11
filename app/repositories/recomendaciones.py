@@ -1,9 +1,7 @@
-"""Recomendaciones basadas en la estructura del grafo (RF8)."""
 from app import db
 
 
 def contactos(uid, limite=10):
-    """Amigos de amigos: más contactos en común, habilidades y empresas compartidas = mejor."""
     return db.read(
         """
         MATCH (u:Usuario {id: $id})-[:CONECTA_CON]-(amigo:Usuario)-[:CONECTA_CON]-(sug:Usuario)
@@ -28,7 +26,6 @@ def contactos(uid, limite=10):
 
 
 def empleos(uid, limite=10):
-    """Ofertas abiertas: 80 % cobertura de habilidades + 20 % contactos dentro de la empresa."""
     return db.read(
         """
         MATCH (u:Usuario {id: $id})
@@ -59,7 +56,6 @@ def empleos(uid, limite=10):
 
 
 def colaboradores(uid, limite=10):
-    """Personas a ≤ 3 saltos que aportan tecnologías de los proyectos del usuario que él no domina."""
     return db.read(
         """
         MATCH (u:Usuario {id: $id})-[:PARTICIPA_EN]->(p:Proyecto)-[:USA_TECNOLOGIA]->(h:Habilidad)

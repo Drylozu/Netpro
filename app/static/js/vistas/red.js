@@ -1,5 +1,3 @@
-// Dibuja la red de usuarios como grafo con una simulación de fuerzas escrita a mano
-// (repulsión entre nodos, resortes en las conexiones y atracción hacia su comunidad).
 const NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag, attrs) => {
   const el = document.createElementNS(NS, tag);
@@ -13,7 +11,6 @@ export function dibujarRed({ nodos, aristas }, colorDe, { ancho = 760, alto = 56
   const vecinos = nodos.map(() => new Set());
   enlaces.forEach(([a, b]) => { vecinos[a].add(b); vecinos[b].add(a); });
 
-  // Cada comunidad arranca agrupada alrededor de un punto de un círculo: converge más rápido
   const comunidades = [...new Set(nodos.map((n) => n.comunidad))];
   const centros = new Map(comunidades.map((c, i) => {
     const ang = (2 * Math.PI * i) / comunidades.length - Math.PI / 2;
@@ -25,9 +22,7 @@ export function dibujarRed({ nodos, aristas }, colorDe, { ancho = 760, alto = 56
     return { x: cx + (Math.random() - 0.5) * 60, y: cy + (Math.random() - 0.5) * 60, vx: 0, vy: 0, r: 2.6 + 8.5 * Math.sqrt(n.pagerank / maxPr) };
   });
 
-  // Fruchterman–Reingold: repulsión k²/d, atracción d²/k, desplazamiento limitado por una
-  // "temperatura" que se enfría (alfa: 1 → 0). Un tirón extra hacia el centro de su comunidad
-  // separa visualmente los grupos que detectó Louvain.
+  // Fruchterman–Reingold con atracción extra hacia el centro de cada comunidad
   const k = 0.72 * Math.sqrt((ancho * alto) / nodos.length);
   function paso(alfa) {
     for (const p of P) { p.vx = 0; p.vy = 0; }
@@ -93,7 +88,6 @@ export function dibujarRed({ nodos, aristas }, colorDe, { ancho = 760, alto = 56
     etiqueta.setAttribute('y', P[i].y - P[i].r - 8);
   }
 
-  // Un único momento de animación: la red se acomoda al cargar la página
   const TOTAL = 320;
   const reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reducir) {
@@ -103,7 +97,7 @@ export function dibujarRed({ nodos, aristas }, colorDe, { ancho = 760, alto = 56
     let t = 0; let montado = false;
     const cuadro = () => {
       if (svg.isConnected) montado = true;
-      else if (montado) return; // el usuario cambió de vista: se detiene la simulación
+      else if (montado) return;
       for (let k = 0; k < 3 && t < TOTAL; k++, t++) paso(1 - t / TOTAL);
       pintar();
       if (t < TOTAL) requestAnimationFrame(cuadro);

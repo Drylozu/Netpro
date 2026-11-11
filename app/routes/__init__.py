@@ -4,7 +4,6 @@ from app.repositories.comun import Invalido
 
 
 def cuerpo():
-    """JSON del cuerpo de la petición (o {} si no hay)."""
     return request.get_json(silent=True) or {}
 
 

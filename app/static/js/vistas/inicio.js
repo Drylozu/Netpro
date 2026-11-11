@@ -14,7 +14,6 @@ const RELS = [
 ];
 const R = 44;
 
-// Diagrama del modelo como SVG generado (contenido fijo, sin datos del usuario).
 function esquema() {
   const lineas = RELS.map(([a, b, tipo]) => {
     const [x1, y1] = NODOS[a]; const [x2, y2] = NODOS[b];
@@ -50,7 +49,6 @@ export async function render() {
       h('p', {}, `${total('Usuario')} profesionales y ${red.aristas.length} conexiones guardadas como un grafo. `,
         'Cada punto es una persona; su tamaño es su influencia y su color, la comunidad a la que pertenece.'),
       h('div', { class: 'leyenda' }, red.comunidades.slice(0, 8).map((c) => {
-        // Si dos comunidades comparten sector, se distinguen por su empresa principal
         const repetido = red.comunidades.filter((x) => x.sector_dominante === c.sector_dominante).length > 1;
         const nombre = repetido && c.empresas[0] ? `${c.sector_dominante}: ${c.empresas[0]}` : c.sector_dominante;
         return h('span', {}, h('i', { style: { background: colorDe(c.comunidad) } }), `${nombre} (${c.tamano})`);

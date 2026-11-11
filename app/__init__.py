@@ -1,4 +1,3 @@
-"""Fábrica de la aplicación Flask: API JSON en /api y frontend estático en /."""
 import atexit
 
 from flask import Flask, jsonify

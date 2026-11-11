@@ -1,4 +1,3 @@
-"""Catálogo de habilidades."""
 from app import db
 from app.repositories.comun import existe, requerir
 
