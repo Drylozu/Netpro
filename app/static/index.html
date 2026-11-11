@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Netpro</title>
+  <meta name="description" content="Netpro: red profesional sobre una base de datos de grafos (Neo4j).">
+  <link rel="preload" href="/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M9 22 16 8 24 21Z' fill='none' stroke='%231c1b3a' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='8' r='5' fill='%233346d3'/%3E%3Ccircle cx='9' cy='22' r='5' fill='%23c4850a'/%3E%3Ccircle cx='24' cy='21' r='5' fill='%230f9372'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body data-seccion="inicio">
+  <div class="marco">
+    <aside class="riel">
+      <a class="marca" href="#/inicio" aria-label="Netpro, inicio">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M9 22 16 8 24 21Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/>
+          <circle cx="16" cy="8" r="5" fill="var(--c-usuario)"/>
+          <circle cx="9" cy="22" r="5" fill="var(--c-empresa)"/>
+          <circle cx="24" cy="21" r="5" fill="var(--c-oferta)"/>
+        </svg>
+        Netpro
+      </a>
+      <nav id="menu" aria-label="Secciones">
+        <a href="#/inicio"><span class="punto"></span>Inicio</a>
+        <a href="#/usuarios"><span class="punto" style="--color: var(--c-usuario)"></span>Usuarios</a>
+        <a href="#/empresas"><span class="punto" style="--color: var(--c-empresa)"></span>Empresas</a>
+        <a href="#/ofertas"><span class="punto" style="--color: var(--c-oferta)"></span>Ofertas</a>
+        <a href="#/proyectos"><span class="punto" style="--color: var(--c-proyecto)"></span>Proyectos</a>
+        <span class="separador" aria-hidden="true"></span>
+        <a href="#/consultas"><span class="punto" style="--color: var(--c-habilidad)"></span>Consultas</a>
+        <a href="#/recomendaciones"><span class="punto" style="--color: var(--c-usuario)"></span>Recomendaciones</a>
+        <a href="#/analitica"><span class="punto" style="--color: var(--c-habilidad)"></span>Analítica</a>
+      </nav>
+      <p class="riel-pie">Datos en Neo4j, consultas en Cypher.</p>
+    </aside>
+    <main id="app"></main>
+  </div>
+  <div id="avisos" aria-live="polite"></div>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
